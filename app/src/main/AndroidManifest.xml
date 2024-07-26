@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+        tools:targetApi="31">
+
+        <meta-data
+            android:name="de.mm20.launcher2.plugin.icon"
+            android:resource="@drawable/ic_google" />
+
+        <meta-data
+            android:name="de.mm20.launcher2.plugin.label"
+            android:value="@string/plugin_package_name" />
+        <meta-data
+            android:name="de.mm20.launcher2.plugin.author"
+            android:value="MM2-0" />
+        <meta-data
+            android:name="de.mm20.launcher2.plugin.description"
+            android:value="@string/plugin_package_description" />
+
+        <provider
+            android:name=".GoogleDriveFileSearchProvider"
+            android:authorities="de.mm20.launcher2.plugin.google.files"
+            android:exported="true"
+            android:icon="@drawable/ic_badge_drive"
+            android:label="@string/drive_plugin_name">
+            <intent-filter>
+                <action android:name="de.mm20.launcher2.action.PLUGIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="de.mm20.launcher2.plugin.description"
+                android:value="@string/drive_plugin_description" />
+        </provider>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="true"
+            android:launchMode="singleInstance">
+
+            <intent-filter>
+                <action android:name="de.mm20.launcher2.action.PLUGIN_SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:path="/google-auth-redirect"
+                    android:scheme="${applicationId}" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

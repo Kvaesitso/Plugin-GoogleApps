@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Kvaesitso Plugin for Google Workspace</string>
+    <string name="plugin_package_name">Google Workspace integration</string>
+    <string name="plugin_package_description">Search files on Google Drive</string>
+    <string name="drive_plugin_description">Search files on Google Drive</string>
+    <string name="drive_plugin_name">Google Drive</string>
+    <string name="drive_plugin_state_setup_required">Sign in with your Google account to search your files on Google Drive</string>
+    <string name="drive_plugin_state_ready">Search %1$s\'s files on Google Drive</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_out">Sign out</string>
+    <string name="sign_in_button">Sign in with Google</string>
+    <string name="signed_in">Signed in as %1$s</string>
+</resources>
