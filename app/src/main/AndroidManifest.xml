@@ -44,6 +44,36 @@
                 android:value="@string/drive_plugin_description" />
         </provider>
 
+        <provider
+            android:name=".GoogleCalendarSearchProvider"
+            android:authorities="de.mm20.launcher2.plugin.google.calendar"
+            android:exported="true"
+            android:icon="@drawable/ic_badge_calendar"
+            android:label="@string/calendar_plugin_name">
+            <intent-filter>
+                <action android:name="de.mm20.launcher2.action.PLUGIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="de.mm20.launcher2.plugin.description"
+                android:value="@string/calendar_plugin_description" />
+        </provider>
+
+        <provider
+            android:name=".GoogleTasksSearchProvider"
+            android:authorities="de.mm20.launcher2.plugin.google.tasks"
+            android:exported="true"
+            android:icon="@drawable/ic_badge_tasks"
+            android:label="@string/tasks_plugin_name">
+            <intent-filter>
+                <action android:name="de.mm20.launcher2.action.PLUGIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="de.mm20.launcher2.plugin.description"
+                android:value="@string/tasks_plugin_description" />
+        </provider>
+
         <activity
             android:name=".SettingsActivity"
             android:exported="true"

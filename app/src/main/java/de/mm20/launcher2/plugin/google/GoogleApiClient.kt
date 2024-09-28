@@ -15,10 +15,15 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
+import com.google.api.client.util.DateTime
 import com.google.api.client.util.store.FileDataStoreFactory
+import com.google.api.services.calendar.model.CalendarListEntry
+import com.google.api.services.calendar.model.Event
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.oauth2.Oauth2
+import com.google.api.services.tasks.model.Task
+import com.google.api.services.tasks.model.TaskList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +32,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import com.google.api.services.calendar.Calendar
+import com.google.api.services.tasks.Tasks
 
 sealed interface LoginState {
     data class LoggedIn(val displayName: String, val picture: String?) : LoginState
@@ -129,7 +136,12 @@ class GoogleApiClient private constructor(private val context: Application) {
     }
 
     private suspend fun getRequestInitializer(): HttpRequestInitializer? {
-        val credential = getCredential() ?: return null
+        val credential = getCredential()
+
+        if (credential == null) {
+            Log.w("GoogleApiClient", "Failed to get credential")
+            return null
+        }
 
         return HttpRequestInitializer { request ->
             credential.initialize(request)
@@ -170,15 +182,15 @@ class GoogleApiClient private constructor(private val context: Application) {
         return "" to null
     }
 
-    suspend fun driveFileSearch(query: String): List<File> {
+    suspend fun driveFilesList(q: String): List<File> {
         val requestInitializer = getRequestInitializer() ?: return emptyList()
         return withContext(Dispatchers.IO) {
             val drive = Drive.Builder(transport, jsonFactory, requestInitializer).build()
             val request = drive.files().list().apply {
-                q = "name contains '${query.replace("'", "")}'"
+                setQ(q)
                 pageSize = 20
                 fields =
-                    "files(id, webViewLink, size, name, mimeType, owners, imageMediaMetadata, videoMediaMetadata)"
+                    "files(id, webViewLink, webContentLink, size, name, mimeType, owners, imageMediaMetadata, videoMediaMetadata)"
                 corpora = "user"
             }
             val response = try {
@@ -201,7 +213,147 @@ class GoogleApiClient private constructor(private val context: Application) {
             val drive = Drive.Builder(transport, jsonFactory, requestInitializer).build()
             val request = drive.files().get(id).apply {
                 fields =
-                    "id, webViewLink, size, name, mimeType, owners, imageMediaMetadata, videoMediaMetadata"
+                    "id, webViewLink, webContentLink, size, name, mimeType, owners, imageMediaMetadata, videoMediaMetadata"
+            }
+            val result = request.execute()
+            result
+        }
+    }
+
+    suspend fun calendarListsList() : List<CalendarListEntry> {
+        val requestInitializer = getRequestInitializer() ?: return emptyList()
+        return withContext(Dispatchers.IO) {
+            val calendar = Calendar.Builder(transport, jsonFactory, requestInitializer).build()
+            val request = calendar.calendarList().list().apply {
+                fields = "items(id, summary, summaryOverride, backgroundColor)"
+            }
+            val response = try {
+                request.execute()
+            } catch (e: IOException) {
+                Log.e("GoogleApiClient", "Failed to list calendars", e)
+                return@withContext emptyList()
+            } catch (e: Error) {
+                Log.e("GoogleApiClient", "Failed to list calendars", e)
+                return@withContext emptyList()
+            }
+
+            response.items ?: emptyList()
+        }
+    }
+
+    suspend fun calendarEventsList(
+        calendarId: String,
+        q: String? = null,
+        timeMin: Long? = null,
+        timeMax: Long? = null,
+    ): List<Event> {
+        val requestInitializer = getRequestInitializer() ?: return emptyList()
+        return withContext(Dispatchers.IO) {
+            val calendar = Calendar.Builder(transport, jsonFactory, requestInitializer).build()
+            val request = calendar.events().list(calendarId).apply {
+                if (q != null) {
+                    setQ(q)
+                }
+                if (timeMin != null) {
+                    setTimeMin(DateTime(timeMin))
+                }
+                if (timeMax != null) {
+                    setTimeMax(DateTime(timeMax))
+                }
+                maxResults = 20
+                fields =
+                    "items(id, summary, description, location, start, end, attendees, htmlLink)"
+            }
+            val response = try {
+                request.execute()
+            } catch (e: IOException) {
+                Log.e("GoogleApiClient", "Failed to list calendar", e)
+                return@withContext emptyList()
+            } catch (e: Error) {
+                Log.e("GoogleApiClient", "Failed to list calendar", e)
+                return@withContext emptyList()
+            }
+
+            response.items ?: emptyList()
+        }
+    }
+
+    suspend fun calendarEventById(calendarId: String, id: String): Event? {
+        val requestInitializer = getRequestInitializer() ?: return null
+        return withContext(Dispatchers.IO) {
+            val calendar = Calendar.Builder(transport, jsonFactory, requestInitializer).build()
+            val request = calendar.events().get(calendarId, id).apply {
+                fields =
+                    "id, summary, description, location, start, end, attendees, htmlLink, completed"
+            }
+            val result = request.execute()
+            result
+        }
+    }
+
+    suspend fun tasklistsList(): List<TaskList> {
+        val requestInitializer = getRequestInitializer() ?: return emptyList()
+        return withContext(Dispatchers.IO) {
+            val tasks = Tasks.Builder(transport, jsonFactory, requestInitializer).build()
+            val request = tasks.tasklists().list().apply {
+                fields = "items(id, title, updated)"
+            }
+            val response = try {
+                request.execute()
+            } catch (e: IOException) {
+                Log.e("GoogleApiClient", "Failed to list tasklists", e)
+                return@withContext emptyList()
+            } catch (e: Error) {
+                Log.e("GoogleApiClient", "Failed to list tasklists", e)
+                return@withContext emptyList()
+            }
+
+            response.items ?: emptyList()
+        }
+    }
+
+    suspend fun tasksList(
+        tasklistId: String,
+        dueMin: Long? = null,
+        dueMax: Long? = null,
+    ): List<Task> {
+        val requestInitializer = getRequestInitializer() ?: return emptyList()
+        return withContext(Dispatchers.IO) {
+            val tasks = Tasks.Builder(transport, jsonFactory, requestInitializer).build()
+            val request = tasks.tasks().list(tasklistId).apply {
+                if (dueMin != null) {
+                    setDueMin(DateTime(dueMin).toStringRfc3339())
+                }
+                if (dueMax != null) {
+                    setDueMax(DateTime(dueMax).toStringRfc3339())
+                }
+                setShowHidden(true)
+                setShowCompleted(true)
+                maxResults = 20
+                fields =
+                    "items(id, title, due, webViewLink, status, notes, completed)"
+            }
+            val response = try {
+                request.execute()
+            } catch (e: IOException) {
+                Log.e("GoogleApiClient", "Failed to list tasks", e)
+                return@withContext emptyList()
+            } catch (e: Error) {
+                Log.e("GoogleApiClient", "Failed to list tasks", e)
+                return@withContext emptyList()
+            }
+
+            response.items ?: emptyList()
+        }
+    }
+
+    suspend fun taskById(tasklistId: String, id: String): Task? {
+        val requestInitializer = getRequestInitializer() ?: return null
+        return withContext(Dispatchers.IO) {
+            val tasks = Tasks.Builder(transport, jsonFactory, requestInitializer).build()
+            val request = tasks.tasks().get(tasklistId, id).apply {
+                fields =
+                    "id, title, due, webViewLink, status, notes, completed"
             }
             val result = request.execute()
             result
@@ -218,6 +370,11 @@ class GoogleApiClient private constructor(private val context: Application) {
         }
 
         private val SCOPES =
-            setOf("https://www.googleapis.com/auth/drive.metadata.readonly", "profile")
+            setOf(
+                "https://www.googleapis.com/auth/drive.metadata.readonly",
+                "https://www.googleapis.com/auth/calendar.readonly",
+                "https://www.googleapis.com/auth/tasks.readonly",
+                "profile"
+            )
     }
 }

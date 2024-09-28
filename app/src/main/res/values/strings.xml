@@ -1,11 +1,19 @@
 <resources>
-    <string name="app_name">Kvaesitso Plugin for Google Workspace</string>
-    <string name="plugin_package_name">Google Workspace integration</string>
-    <string name="plugin_package_description">Search files on Google Drive</string>
+    <string name="app_name">Kvaesitso Plugin for Google Apps</string>
+    <string name="plugin_package_name">Google Apps integration</string>
+    <string name="plugin_package_description">Search Google Drive, Google Calendar, and Google Tasks</string>
     <string name="drive_plugin_description">Search files on Google Drive</string>
     <string name="drive_plugin_name">Google Drive</string>
     <string name="drive_plugin_state_setup_required">Sign in with your Google account to search your files on Google Drive</string>
     <string name="drive_plugin_state_ready">Search %1$s\'s files on Google Drive</string>
+    <string name="calendar_plugin_description">Search events on Google Calendar</string>
+    <string name="calendar_plugin_name">Google Calendar</string>
+    <string name="calendar_plugin_state_setup_required">Sign in with your Google account to search your calendar on Google Calendar</string>
+    <string name="calendar_plugin_state_ready">Search %1$s\'s calendar on Google Calendar</string>
+    <string name="tasks_plugin_description">Search tasks on Google Tasks</string>
+    <string name="tasks_plugin_name">Google Tasks</string>
+    <string name="tasks_plugin_state_setup_required">Sign in with your Google account to search your tasks on Google Tasks</string>
+    <string name="tasks_plugin_state_ready">Search %1$s\'s tasks on Google Tasks</string>
     <string name="sign_in">Sign in</string>
     <string name="sign_out">Sign out</string>
     <string name="sign_in_button">Sign in with Google</string>

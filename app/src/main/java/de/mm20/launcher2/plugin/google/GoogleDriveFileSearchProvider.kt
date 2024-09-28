@@ -2,7 +2,6 @@ package de.mm20.launcher2.plugin.google
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import de.mm20.launcher2.plugin.config.QueryPluginConfig
 import de.mm20.launcher2.plugin.config.StorageStrategy
 import de.mm20.launcher2.sdk.PluginState
@@ -13,10 +12,9 @@ import de.mm20.launcher2.sdk.files.FileDimensions
 import de.mm20.launcher2.sdk.files.FileMetadata
 import de.mm20.launcher2.sdk.files.FileProvider
 import kotlinx.coroutines.flow.firstOrNull
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class GoogleDriveFileSearchProvider: FileProvider(
+class GoogleDriveFileSearchProvider : FileProvider(
     QueryPluginConfig(
         storageStrategy = StorageStrategy.StoreCopy,
     )
@@ -30,12 +28,13 @@ class GoogleDriveFileSearchProvider: FileProvider(
 
     override suspend fun search(query: String, params: SearchParams): List<File> {
         if (!params.allowNetwork) return emptyList()
-        val files = apiClient.driveFileSearch(query)
+        val files = apiClient.driveFilesList(
+            q = "name contains '${query.replace("'", "")}'"
+        )
         return files.mapNotNull { it.toFileResult() }
     }
 
     override suspend fun refresh(item: File, params: RefreshParams): File? {
-        Log.d("MM20" , "Refreshing file ${item.id}")
         if (params.lastUpdated + 5.seconds.inWholeMilliseconds > System.currentTimeMillis()) {
             return item
         }
@@ -46,7 +45,10 @@ class GoogleDriveFileSearchProvider: FileProvider(
         val loginState = apiClient.loginState.firstOrNull()
         if (loginState is LoginState.LoggedIn) {
             return PluginState.Ready(
-                text = context!!.getString(R.string.drive_plugin_state_ready, loginState.displayName),
+                text = context!!.getString(
+                    R.string.drive_plugin_state_ready,
+                    loginState.displayName
+                ),
             )
         }
         return PluginState.SetupRequired(

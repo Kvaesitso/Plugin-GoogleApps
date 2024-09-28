@@ -2,11 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room)
 }
 
 android {
     namespace = "de.mm20.launcher2.plugin.google"
-    compileSdkPreview = "VanillaIceCream"
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "de.mm20.launcher2.plugin.google"
@@ -37,6 +39,11 @@ android {
 
     packaging {
         resources.excludes += "META-INF/DEPENDENCIES"
+        resources.excludes += "META-INF/INDEX.LIST"
+    }
+
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 }
 
@@ -48,10 +55,16 @@ dependencies {
     implementation(libs.androidx.compose.materialicons)
     implementation(libs.androidx.lifecycle.compose)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.work)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.launchersdk)
     implementation(libs.coil.compose)
     implementation(libs.google.auth)
     implementation(libs.google.oauth2)
     implementation(libs.google.drive)
+    implementation(libs.google.calendar)
+    implementation(libs.google.tasks)
     implementation(libs.google.apiclient)
 }
