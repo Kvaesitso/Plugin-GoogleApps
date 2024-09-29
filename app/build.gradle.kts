@@ -57,7 +57,6 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.work)
     ksp(libs.androidx.room.compiler)
     implementation(libs.launchersdk)
     implementation(libs.coil.compose)

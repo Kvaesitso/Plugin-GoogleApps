@@ -18,7 +18,6 @@ abstract class Database : RoomDatabase() {
         private lateinit var instance: Database
         operator fun invoke(context: Context): Database {
             if (!::instance.isInitialized) {
-                Log.d("MM20", "Initializing database")
                 instance = Room.databaseBuilder<Database>(
                     context.applicationContext,
                     "offline_data"
