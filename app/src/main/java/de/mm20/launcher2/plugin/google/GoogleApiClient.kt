@@ -10,6 +10,7 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.edit
 import com.google.api.client.auth.oauth2.Credential
+import com.google.api.client.auth.oauth2.TokenResponseException
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
 import com.google.api.client.http.HttpRequestInitializer
@@ -152,13 +153,17 @@ class GoogleApiClient private constructor(private val context: Application) {
 
     private suspend fun getCredential(): Credential? {
         return withContext(Dispatchers.IO) {
-            val credential: Credential? = auth.loadCredential("default")
-            if ((credential?.expiresInSeconds ?: 0) < 5 * 60) {
+            val credential: Credential = auth.loadCredential("default") ?: return@withContext null
+            if ((credential.expiresInSeconds ?: 0) < 5 * 60) {
                 try {
-                    if (credential?.refreshToken() == false) return@withContext null
+                    if (credential.refreshToken() == false) return@withContext null
+                } catch (e: TokenResponseException) {
+                    Log.e("GoogleApiClient", "Failed to refresh token, signing out", e)
+                    signOut()
+                    return@withContext null
                 } catch (e: IOException) {
                     Log.e("GoogleApiClient", "Failed to refresh token", e)
-                    return@withContext null
+                    return@withContext credential
                 }
             }
             return@withContext credential
