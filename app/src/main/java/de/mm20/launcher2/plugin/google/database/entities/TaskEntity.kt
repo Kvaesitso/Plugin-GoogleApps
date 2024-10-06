@@ -9,7 +9,6 @@ data class TaskEntity(
     val tasklistId: String,
     val title: String,
     val notes: String?,
-    val tasklistName: String?,
     val due: Long,
     val webViewLink: String,
     val completed: Boolean,

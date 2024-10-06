@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import de.mm20.launcher2.plugin.google.database.entities.TaskEntity
+import de.mm20.launcher2.plugin.google.database.entities.TaskWithTasklistEntity
 
 @Dao
 interface TasksDao {
@@ -24,7 +25,7 @@ interface TasksDao {
     @Update
     suspend fun update(task: TaskEntity)
 
-    @Query("SELECT * FROM tasks WHERE tasklistId IN (:tasklistIds)" +
+    @Query("SELECT * FROM tasks_with_tasklist WHERE tasklistId IN (:tasklistIds)" +
             " AND (:query IS NULL OR title LIKE '%' || :query || '%')" +
             " AND (:start IS NULL OR :start <= due)" +
             " AND (:end IS NULL OR :end > due)" +
@@ -34,5 +35,5 @@ interface TasksDao {
         start: Long?,
         end: Long?,
         tasklistIds: Set<String>,
-    ): List<TaskEntity>
+    ): List<TaskWithTasklistEntity>
 }

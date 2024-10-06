@@ -38,7 +38,6 @@ class GoogleTasksSearchProvider : CalendarProvider(
 ) {
     private lateinit var apiClient: GoogleApiClient
     private lateinit var database: Database
-
     private lateinit var prefs: SharedPreferences
 
     override fun onCreate(): Boolean {
@@ -56,8 +55,6 @@ class GoogleTasksSearchProvider : CalendarProvider(
         ) {
             syncTasks()
         }
-
-        val database = Database(context!!)
 
         val tasklistIds =
             database.tasklists().getAll().map { it.id }.toSet() - query.excludedCalendars.toSet()
@@ -90,22 +87,11 @@ class GoogleTasksSearchProvider : CalendarProvider(
 
         val refreshed = apiClient.taskById(tasklistId, id) ?: return null
 
-        val database = Database(context!!)
+        val entity = refreshed.toEntity(tasklistId) ?: return null
 
-        database.tasks().update(
-            TaskEntity(
-                id = refreshed.id ?: return null,
-                tasklistId = tasklistId,
-                title = refreshed.title ?: return null,
-                notes = refreshed.notes,
-                due = DateTime(refreshed.due).value,
-                tasklistName = item.calendarName,
-                webViewLink = refreshed.webViewLink ?: return null,
-                completed = refreshed.completed != null,
-            )
-        )
+        database.tasks().update(entity)
 
-        return apiClient.taskById(tasklistId, id)?.toCalendarEvent(
+        return refreshed.toCalendarEvent(
             TaskList().setId(tasklistId).setTitle(item.calendarName)
         )
     }
@@ -153,8 +139,7 @@ class GoogleTasksSearchProvider : CalendarProvider(
 
             val updatedTasklists = tasklists.filter {
                 oldTasklists.find { old -> old.id == it.id }
-                    ?.let { old -> old.updated < it.updated }
-                    ?: true
+                    ?.let { old -> old.updated < it.updated } != false
             }
 
             val dueMin = System.currentTimeMillis()
@@ -163,7 +148,7 @@ class GoogleTasksSearchProvider : CalendarProvider(
             for (tasklist in updatedTasklists) {
                 val tasks = apiClient.tasksList(tasklist.id, dueMin, dueMax)
                     .mapNotNull {
-                        it.toEntity(tasklist)
+                        it.toEntity(tasklist.id)
                     }
                 taskDao.replaceAll(tasklist.id, tasks)
             }
@@ -177,10 +162,9 @@ class GoogleTasksSearchProvider : CalendarProvider(
                     )
                 }
             )
-        }
-
-        prefs.edit {
-            putLong("last_sync", System.currentTimeMillis())
+            prefs.edit {
+                putLong("last_sync", System.currentTimeMillis())
+            }
         }
     }
 
@@ -207,14 +191,13 @@ class GoogleTasksSearchProvider : CalendarProvider(
         )
     }
 
-    private fun Task.toEntity(tasklist: TasklistEntity): TaskEntity? {
+    private fun Task.toEntity(tasklistId: String): TaskEntity? {
         return TaskEntity(
             id = id ?: return null,
-            tasklistId = tasklist.id,
+            tasklistId = tasklistId,
             title = title ?: return null,
             notes = notes,
             due = DateTime(due ?: return null).value,
-            tasklistName = tasklist.title,
             webViewLink = webViewLink ?: return null,
             completed = completed != null
         )

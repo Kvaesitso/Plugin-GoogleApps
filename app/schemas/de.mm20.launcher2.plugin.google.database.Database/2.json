@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "cfcb7f4823e3e33ed974ddfe6d35bf39",
+    "version": 2,
+    "identityHash": "ec3ca1b9b5a9d18b66acd7f475c3f936",
     "entities": [
       {
         "tableName": "tasklists",
@@ -89,8 +89,8 @@
         }
       },
       {
-        "tableName": "calendar_lists",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `summary` TEXT NOT NULL, `backgroundColor` INTEGER, PRIMARY KEY(`id`))",
+        "tableName": "calendar_list",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `summary` TEXT NOT NULL, `backgroundColor` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -107,7 +107,7 @@
           {
             "fieldPath": "backgroundColor",
             "columnName": "backgroundColor",
-            "affinity": "INTEGER"
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -195,13 +195,13 @@
         "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tasks.id, tasks.tasklistId, tasklists.title AS tasklistName, tasks.title, tasks.notes, tasks.due, tasks.webViewLink, tasks.completed\n        FROM tasks\n        LEFT JOIN tasklists ON tasks.tasklistId = tasklists.id"
       },
       {
-        "viewName": "events_with_calendar_lists",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT events.*, calendar_lists.summary AS calendarListSummary, calendar_lists.backgroundColor AS calendarListBackgroundColor FROM events LEFT JOIN calendar_lists ON events.calendarId = calendar_lists.id"
+        "viewName": "EventWithCalendarListEntity",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT events.*, calendar_list.summary AS calendarListSummary, calendar_list.backgroundColor AS calendarListBackgroundColor FROM events LEFT JOIN calendar_list ON events.calendarId = calendar_list.id"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfcb7f4823e3e33ed974ddfe6d35bf39')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ec3ca1b9b5a9d18b66acd7f475c3f936')"
     ]
   }
 }
