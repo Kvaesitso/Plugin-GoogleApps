@@ -34,7 +34,7 @@ To build this plugin, you need to setup a project in the Google Cloud Console.
     1. Go to APIs & Services > Credentials.
     1. Create a new OAuth 2.0 client ID.
     1. Choose "Android" as the application type.
-    1. Enter the package name (`de.mm20.launcher2.release`) and the SHA-1 certificate fingerprint
+    1. Enter the package name (`de.mm20.launcher2.plugin.google`) and the SHA-1 certificate fingerprint
     1. Click "Create".
 1. Download the client config file (again, you need to do this twice, for debug builds and for
    release
