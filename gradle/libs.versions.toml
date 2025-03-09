@@ -12,7 +12,7 @@ room = "2.7.0-alpha09"
 
 coil = "2.3.0"
 
-launcherSdk = "2.1.2-SNAPSHOT"
+launcherSdk = "2.1.2"
 
 [libraries]
 launchersdk = { group = "de.mm20.launcher2", name = "plugin-sdk", version.ref = "launcherSdk" }
